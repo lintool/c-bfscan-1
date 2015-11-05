@@ -7,6 +7,8 @@
 #include "heap.h"
 #include "topics2011.h"
 #include "topics2011_time.h"
+// #include "topics_1000.h"
+// #include "topics_1000_time.h"
 #include "constants.h"
 
 extern void init_tf();
@@ -42,10 +44,10 @@ int main(int argc, const char* argv[]) {
         continue;
       }
       score = 0;
-      for (t=2; t<2+topics2011[n][1]; t++) {
-        for (j=0; j<doclengths_ordered[i]; j++) {
+      for (j=0; j<doclengths_ordered[i]; j++) {
+        for (t=2; t<2+topics2011[n][1]; t++) {
           if (collection_tf[base+j] == topics2011[n][t]) {
-              score += log(1 + tf[base+j]/(MU * (cf[topics2011[n][t]] + 1) / (TOTAL_TERMS + 1))) + log(MU / (doclengths[i] + MU));
+            score += log(1 + tf[base+j]/(MU * (cf[collection_tf[base+j]] + 1) / (TOTAL_TERMS + 1))) + log(MU / (doclengths[i] + MU));
           }
         }
       }
@@ -75,7 +77,7 @@ int main(int argc, const char* argv[]) {
 
     int rank = TOP_K;
     while (heap_delmin(&h, (void**)&min_key, (void**)&min_val)) {
-      printf("MB%02d Q0 %ld %d %f bfscan_tf_v2\n", (n+1), tweetids[*min_val], rank, *min_key);
+      printf("MB%02d Q0 %ld %d %f Scan1\n", (n+1), tweetids[*min_val], rank, *min_key);
       rank--;
     }
 

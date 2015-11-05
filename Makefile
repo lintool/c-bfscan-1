@@ -1,31 +1,67 @@
-all: bfscan_pos_v1 bfscan_pos_v2 bfscan_pos_v3 bfscan_tf_v1 bfscan_tf_v2 bfscan_tf_v3 bfscan_tf_v4 bfscan_tf_v5 raw_scan raw_scan_24bit
+all: Scan1 Scan2 AVXScan1 AVXScan2 AVXScan2_Impactscore Scan1_multithread_interquery Scan1_multithread_intraquery Scan2_multithread_interquery Scan2_multithread_intraquery AVXScan1_multithread_interquery AVXScan1_multithread_intraquery AVXScan2_multithread_interquery AVXScan2_multithread_intraquery AVXScan2_Impactscore_multithread_interquery AVXScan2_Impactscore_multithread_intraquery
+	
+Scan1: Scan1.c
+	gcc -O3 -w Scan1.c heap.c data.c -lm -mcmodel=medium -o Scan1
 
-bfscan_pos_v1: bfscan_pos_v1.c
-	gcc -O3 -Wall bfscan_pos_v1.c heap.c data.c -o bfscan_pos_v1
+Scan1_pos: Scan1_pos.c
+	gcc -O3 -w Scan1_pos.c heap.c data.c -lm -mcmodel=medium -o Scan1_pos
 
-bfscan_pos_v2: bfscan_pos_v2.c
-	gcc -O3 -Wall bfscan_pos_v2.c heap.c data.c -o bfscan_pos_v2
+Scan2: Scan2.c
+	gcc -O3 -w Scan2.c heap.c data.c -lm -mcmodel=medium -o Scan2
 
-bfscan_pos_v3: bfscan_pos_v3.c
-	gcc -O3 -Wall bfscan_pos_v3.c heap.c data.c -o bfscan_pos_v3
+Scan2_pos: Scan2_pos.c
+	gcc -O3 -w Scan2_pos.c heap.c data.c -lm -mcmodel=medium -o Scan2_pos
 
-bfscan_tf_v1: bfscan_tf_v1.c
-	gcc -O3 -Wall bfscan_tf_v1.c heap.c data.c -o bfscan_tf_v1
+AVXScan1: AVXScan1.c
+	gcc -O3 -w -msse4.1 -mavx2 AVXScan1.c heap.c data.c -lm -mcmodel=medium -o AVXScan1
 
-bfscan_tf_v2: bfscan_tf_v2.c
-	gcc -O3 -Wall bfscan_tf_v2.c heap.c data.c -o bfscan_tf_v2
+AVXScan2: AVXScan2.c
+	gcc -O3 -w -msse4.1 -mavx2 AVXScan2.c heap.c data.c -lm -mcmodel=medium -o AVXScan2
 
-bfscan_tf_v3: bfscan_tf_v3.c
-	gcc -O3 -Wall bfscan_tf_v3.c heap.c data.c -o bfscan_tf_v3
+AVXScan2_ScoreMapping: AVXScan2_ScoreMapping.c
+	gcc -O3 -w -msse4.1 -mavx2 AVXScan2_ScoreMapping.c heap.c data.c -lm -mcmodel=medium -o AVXScan2_ScoreMapping
 
-bfscan_tf_v4: bfscan_tf_v4.c
-	gcc -O3 -Wall bfscan_tf_v4.c heap.c data.c func_arr.c -o bfscan_tf_v4
+AVXScan2_Impactscore: AVXScan2_Impactscore.c
+	gcc -O3 -w -msse4.1 -mavx2 AVXScan2_Impactscore.c heap.c data.c -lm -mcmodel=medium -o AVXScan2_Impactscore
 
-bfscan_tf_v5: bfscan_tf_v5.c
-	gcc -O3 -Wall bfscan_tf_v5.c heap.c data.c func_arr.c -o bfscan_tf_v5
+Scan1_multithread_interquery: Scan1_multithread_interquery.c
+	gcc -O3 -w Scan1_multithread_interquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o Scan1_multithread_interquery -lpthread
 
-raw_scan: raw_scan.c
-	gcc -O3 -Wall raw_scan.c data.c -o raw_scan
+Scan1_multithread_intraquery: Scan1_multithread_intraquery.c
+	gcc -O3 -w Scan1_multithread_intraquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o Scan1_multithread_intraquery -lpthread
 
-raw_scan_24bit: raw_scan_24bit.c
-	gcc -O3 -Wall raw_scan_24bit.c data.c -o raw_scan_24bit
+Scan1_pos_multithread_interquery: Scan1_pos_multithread_interquery.c
+	gcc -O3 -w Scan1_pos_multithread_interquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o Scan1_pos_multithread_interquery -lpthread
+
+Scan1_pos_multithread_intraquery: Scan1_pos_multithread_intraquery.c
+	gcc -O3 -w Scan1_pos_multithread_intraquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o Scan1_pos_multithread_intraquery -lpthread
+
+Scan2_multithread_interquery: Scan2_multithread_interquery.c
+	gcc -O3 -w Scan2_multithread_interquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o Scan2_multithread_interquery -lpthread
+
+Scan2_multithread_intraquery: Scan2_multithread_intraquery.c
+	gcc -O3 -w Scan2_multithread_intraquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o Scan2_multithread_intraquery -lpthread
+
+Scan2_pos_multithread_interquery: Scan2_pos_multithread_interquery.c
+	gcc -O3 -w Scan2_pos_multithread_interquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o Scan2_pos_multithread_interquery -lpthread
+
+Scan2_pos_multithread_intraquery: Scan2_pos_multithread_intraquery.c
+	gcc -O3 -w Scan2_pos_multithread_intraquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o Scan2_pos_multithread_intraquery -lpthread
+
+AVXScan1_multithread_interquery: AVXScan1_multithread_interquery.c
+	gcc -O3 -w -msse4.1 -mavx2 AVXScan1_multithread_interquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o AVXScan1_multithread_interquery -lpthread
+
+AVXScan1_multithread_intraquery: AVXScan1_multithread_intraquery.c
+	gcc -O3 -w -msse4.1 -mavx2 AVXScan1_multithread_intraquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o AVXScan1_multithread_intraquery -lpthread
+
+AVXScan2_multithread_interquery: AVXScan2_multithread_interquery.c
+	gcc -O3 -w -msse4.1 -mavx2 AVXScan2_multithread_interquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o AVXScan2_multithread_interquery -lpthread
+
+AVXScan2_multithread_intraquery: AVXScan2_multithread_intraquery.c
+	gcc -O3 -w -msse4.1 -mavx2 AVXScan2_multithread_intraquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o AVXScan2_multithread_intraquery -lpthread
+
+AVXScan2_Impactscore_multithread_interquery: AVXScan2_Impactscore_multithread_interquery.c
+	gcc -O3 -w -msse4.1 -mavx2 AVXScan2_Impactscore_multithread_interquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o AVXScan2_Impactscore_multithread_interquery -lpthread
+
+AVXScan2_Impactscore_multithread_intraquery: AVXScan2_Impactscore_multithread_intraquery.c
+	gcc -O3 -w -msse4.1 -mavx2 AVXScan2_Impactscore_multithread_intraquery.c heap.c data.c threadpool.c -lm -mcmodel=medium -o AVXScan2_Impactscore_multithread_intraquery -lpthread

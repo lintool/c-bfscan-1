@@ -1,3 +1,5 @@
+The data locates at: /fs/clip-twitter/ylwang/bfscan-statistics/All/
+
 
 **Positional representation**
 
@@ -97,3 +99,4 @@ Lucene              200
 raw_scan            240
 raw_scan_24bits     350
 ```
+

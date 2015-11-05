@@ -7,6 +7,8 @@
 #include "heap.h"
 #include "topics2011.h"
 #include "topics2011_time.h"
+// #include "topics_1000.h"
+// #include "topics_1000_time.h"
 #include "constants.h"
 
 extern void init_pos();
@@ -74,7 +76,7 @@ int main(int argc, const char* argv[]) {
             float *scorez = malloc(sizeof(float)); *scorez = score;
             heap_insert(&h, scorez, docid);
           }
-	      }
+        }
       }
 
       base += doclengths[i];
@@ -82,7 +84,7 @@ int main(int argc, const char* argv[]) {
 
     int rank = TOP_K;
     while (heap_delmin(&h, (void**)&min_key, (void**)&min_val)) {
-      printf("MB%02d Q0 %ld %d %f bfscan_pos_v1\n", (n+1), tweetids[*min_val], rank, *min_key);
+      printf("MB%02d Q0 %ld %d %f Scan1_pos\n", (n+1), tweetids[*min_val], rank, *min_key);
       rank--;
     }
 
