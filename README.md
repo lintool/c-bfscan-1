@@ -1,99 +1,140 @@
+System Design
+--------------
+There are four different strategies you can run: Scan1, Scan2, AVXScan1, AVXScan2 and each has a multithreading version.
+* Scan1(Scan1.c): use nested for loops
+* Scan2(Scan2.c): unroll the for loops that check the query terms
+* AVXScan1(AVXScan1.c): add SSE, AVX2 to Scan2
+* AVXScan2(AVXScan2.c): unroll for loop for looping docs based on AVXScan1
 
-**Positional representation**
+The multithreading versions are just the files that have the term "multithread" in it and all the files are self-explanatory.
 
-The positional representation is simply a sequence of termids, one for each document position:
+Getting Started
+--------------
+1. You can clone the repo with the following command:
 
-```
-352
-931
-64
-352
-846
-...
-```
+	```
+	$ git clone git://github.com/lintool/c-bfscan.git
+	``` 
 
-That is, term 352 appears in position 0, term 931 appears in position 1, etc.
+2. Once you've cloned the repository, change directory into `twitter-tools-core` and build the package with Maven:
 
-**TF representation**
+	```
+	$ cd c-bfscan/twitter-tools-core
+	$ mvn clean package appassembler:assemble
+	```
 
-The TF representation requires two parallel arrays, and in essence "pre-aggregates" the TF within each document:
+3. Build the index on the data collection:
 
-```
-352  2
-931  1
-64   1
-846  1
-...
-```
+	```
+	$ sh target/appassembler/bin/IndexStatuses -collection {collectionPath} -index {indexPath} -optimize
+	```
 
-In other words, term 352 appears twice (i.e., has *tf* = 2).
+4. Generate document pool, where the dataPath is the path that stores the document pool.
 
-**Implementation 1**
+	```
+	$ sh target/appassembler/bin/GenerateStatistics -collection {collectionPath} -index {indexPath} -output {dataPath}
+	```
 
-For each topic:
+5. To format the efficiency topics (here we provide an efficiency file in /data/ folder) to TREC query format and get the top N topics:
 
-- Loop over all documents
-- Loop over terms in document
-- Loop over all query terms
-- Compute score
+	```
+	$ sh target/appassembler/bin/FormatQuery -input ../data/05.efficiency_topics -top {N} -output {queryPath}
+	```
+6. Convert TREC query to the query that can be fed to c-bfscan, note that outputFile is the new format of the query and needs to be a .h file:
 
-**Implementation 2**
+	```
+	$ sh target/appassembler/bin/GenerateQuery -index {indexPath} -query {queryPath} -output {newQuery.h}
+	```
 
-For each topic:
+7. Go back to the main repository:
 
-- Loop over all documents
-- Loop over all query terms
-- Loop over terms in document
-- Compute score
+	```
+	$ cd ..
+	```
 
-Note that implementations 1 and 2 differ in the order of the document terms and query terms loop.
+8. To run different systems:
 
-**Implementation 3**
-
-For each topic:
-
-- Loop over all documents
-- Separate code path for queries of different lengths
-- Loop over terms in document
-- Compute score
-
-**Implementation 4**
-
-For each topic:
-
-- Loop over all documents
-- Separate code path for queries of different lengths
-- Use a dispatch table to dispatch to a separate function to process documents of different lengths
-
-**Implementation 5**
-
-For each topic:
-
-- Loop over an array of function pointers that points to functions that process documents of different lengths
-- Separate code path for queries of different lengths
-
-
-So we have:
-
-- `bfscan_pos_v1`, `bfscan_pos_v2`, `bfscan_pos_v3`, `bfscan_pos_v4`, `bfscan_pos_v5`
-- `bfscan_tf_v1`, `bfscan_tf_v2`, `bfscan_tf_v3`, `bfscan_tf_v4`, `bfscan_tf_v5`
-
-All of these process a single query at a time (then we have separate versions that process different numbers of queries at a time).
-
-**Performance**
-
-Here we show the latency per query in milliseconds for two different implementations.
-
-```
-            v1   v2   v3   v4   v5
-positional  815  630  430
-tf          750  670  405  610  615
-```
-
-Baselines(milliseconds per query):
-
-```
-Lucene              200
-raw_scan            240
-raw_scan_24bits     350
-```
+	Scan1:
+	
+	```
+	$ gcc -O3 -w -lm Scan1.c -o Scan1 -include {newQuery.h}
+	$ ./Scan1 {dataPath}
+	```
+	
+	Scan2:
+	
+	```
+	$ gcc -O3 -w -lm Scan2.c -o Scan2 -include {newQuery.h}
+	$ ./Scan2 {dataPath}
+	```
+	To run AVXScan1 and AVXScan2, make sure that your computer supports AVX2 instructions.
+	
+	AVXScan1:
+	
+	```
+	$ gcc -O3 -w -lm -msse4.1 -mavx2 AVXScan1.c -o AVXScan1 -include {newQuery.h}
+	$ ./AVXScan1 {dataPath}
+	```
+	
+	AVXScan2:
+	
+	```
+	$ gcc -O3 -w -lm -msse4.1 -mavx2 AVXScan2.c -o AVXScan2 -include {newQuery.h}
+	$ ./AVXScan2 {dataPath}
+	```
+	
+	Scan1_multithread_interquery:
+	
+	```
+	$ gcc -O3 -w -lm Scan1_multithread_interquery.c -o Scan1_multithread_interquery -lpthread -include {newQuery.h}
+	$ ./Scan1_multithread_interquery {dataPath} {numThreads}
+	```
+	
+	Scan1_multithread_intraquery:
+	
+	```
+	$ gcc -O3 -w -lm -lm Scan1_multithread_intraquery.c -o Scan1_multithread_intraquery -lpthread -include {newQuery.h} -include {dataPath/termindexes.h}
+	$ ./Scan1_multithread_intraquery {dataPath} {numThreads}
+	```
+	
+	Scan2_multithread_interquery:
+	
+	```
+	$ gcc -O3 -w -lm Scan2_multithread_interquery.c -o Scan2_multithread_interquery -lpthread -include {newQuery.h}
+	$ ./Scan2_multithread_interquery {dataPath} {numThreads}
+	```
+	
+	Scan2_multithread_intraquery:
+	
+	```
+	$ gcc -O3 -w -lm Scan2_multithread_intraquery.c -o Scan2_multithread_intraquery -lpthread -include {newQuery.h} -include {dataPath/termindexes.h}
+	$ ./Scan2_multithread_intraquery {dataPath} {numThreads}
+	```
+	
+	AVXScan1_multithread_interquery:
+	
+	```
+	$ gcc -O3 -w -lm -msse4.1 -mavx2 AVXScan1_multithread_interquery.c -o AVXScan1_multithread_interquery -lpthread -include {newQuery.h}
+	$ ./AVXScan1_multithread_interquery {dataPath} {numThreads}
+	```
+	
+	AVXScan1_multithread_intraquery:
+	
+	```
+	$ gcc -O3 -w -lm -msse4.1 -mavx2 AVXScan1_multithread_intraquery.c -o AVXScan1_multithread_intraquery -lpthread -include {newQuery.h} -include {dataPath/termindexes_padding.h}
+	$ ./AVXScan1_multithread_intraquery {dataPath} {numThreads}
+	```
+	
+	AVXScan2_multithread_interquery:
+	
+	```
+	$ gcc -O3 -w -lm -msse4.1 -mavx2 AVXScan2_multithread_interquery.c -o AVXScan2_multithread_interquery -lpthread -include {newQuery.h}
+	$ ./AVXScan2_multithread_interquery {dataPath} {numThreads}
+	```
+	
+	AVXScan2_multithread_intraquery:
+	
+	```
+	$ gcc -O3 -w -lm -msse4.1 -mavx2 AVXScan2_multithread_intraquery.c -o AVXScan2_multithread_intraquery -lpthread -include {newQuery.h} -include {dataPath/termindexes_padding.h}
+	$ ./AVXScan2_multithread_intraquery {dataPath} {numThreads}
+	```
